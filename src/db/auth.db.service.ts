@@ -7,14 +7,21 @@ import {
 import { UserDto } from 'src/dto/request/user.dto';
 import { DataSource, InsertResult } from 'typeorm';
 import { User } from './entities/user.entity';
+import { UserRoles } from './user.role';
 
 @Injectable()
 export class AuthDbService {
   constructor(@Inject('DataSource') private dataSource: DataSource) {}
 
   async registerUser(registerUserDto: UserDto): Promise<InsertResult> {
+    const { userEmail, userPassword } = registerUserDto;
     try {
-      const added = await this.dataSource.manager.insert(User, registerUserDto);
+      const role = UserRoles.user;
+      const added = await this.dataSource.manager.insert(User, {
+        userEmail,
+        userPassword,
+        role,
+      });
       return added;
     } catch (error) {
       if (error.code == 23505) {

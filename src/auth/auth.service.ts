@@ -4,7 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-  // UnauthorizedException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserDto } from 'src/dto/request/user.dto';
 import { DataSource } from 'typeorm';
@@ -75,34 +75,41 @@ export class AuthService {
     }
   }
 
-  // async loginAdmin(loginAdminDto: UserDto): Promise<LoginResponseDto> {
-  //   const { userEmail, userPassword } = loginAdminDto;
+  async loginAdmin(loginAdminDto: UserDto): Promise<LoginResponseDto> {
+    const { userEmail, userPassword } = loginAdminDto;
 
-  //   try {
-  //     const user = userEmail === this.configService.get('ADMIN_EMAIL');
-  //     if (user) {
-  //       const userId = 'admin';
-  //       if (userPassword === this.configService.get('ADMIN_PASSWORD')) {
-  //         const token: string = await this.jwtService.signAsync({
-  //           userId,
-  //           role: 'admin',
-  //         });
-  //         return new LoginResponseDto(true, 'Login Successful', token);
-  //       } else {
-  //         throw new BadRequestException();
-  //       }
-  //     }
-  //     if (!user) {
-  //       throw new UnauthorizedException();
-  //     }
-  //   } catch (error) {
-  //     if (error.status === 400) {
-  //       throw new BadRequestException('Your password is incorrect. Try again');
-  //     } else if (error.status === 401) {
-  //       throw new UnauthorizedException('You are not admin. Bye');
-  //     }
-  //     console.log(error);
-  //     throw new BadGatewayException('Unable to log you in');
-  //   }
-  // }
+    try {
+      const user = await this.authDbService.loginUser(userEmail);
+      if (user) {
+        const { userId, role } = user;
+        if (await compare(userPassword, user.userPassword)) {
+          if (user?.role === 'admin') {
+            const token: string = await this.jwtService.signAsync({
+              userId,
+              role,
+            });
+            return new LoginResponseDto(true, 'Login Successful', token);
+          } else {
+            throw new UnauthorizedException();
+          }
+        } else {
+          throw new BadRequestException();
+        }
+      } else {
+        throw new NotFoundException();
+      }
+    } catch (error) {
+      if (error.status === 400) {
+        throw new BadRequestException('Your password is incorrect. Try again');
+      } else if (error.status === 401) {
+        throw new UnauthorizedException('You are not admin. Bye');
+      } else if (error.status === 404) {
+        throw new NotFoundException(
+          'Your details do not exist as per our records. Bye',
+        );
+      }
+      console.log(error);
+      throw new BadGatewayException('Unable to log you in');
+    }
+  }
 }

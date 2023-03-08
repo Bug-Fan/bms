@@ -8,7 +8,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
-  // ApiUnauthorizedResponse,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserDto } from 'src/dto/request/user.dto';
 import { LoginResponseDto } from 'src/dto/response/login.response.dto';
@@ -45,13 +45,13 @@ export class AuthController {
     return await this.authService.loginUser(loginUserDto);
   }
 
-  // @Post('admin')
-  // @ApiBody({ type: UserDto })
-  // @ApiOkResponse({ type: LoginResponseDto, description: 'Login Successful' })
-  // @ApiBadRequestResponse({ description: 'Invalid credentials' })
-  // @ApiUnauthorizedResponse({ description: 'User not admin' })
-  // @ApiBadGatewayResponse({ description: 'Unable to login' })
-  // async loginAdmin(@Body() loginAdminDto: UserDto): Promise<LoginResponseDto> {
-  //   return await this.authService.loginAdmin(loginAdminDto);
-  // }
+  @Post('admin')
+  @ApiBody({ type: UserDto })
+  @ApiOkResponse({ type: LoginResponseDto, description: 'Login Successful' })
+  @ApiBadRequestResponse({ description: 'Invalid credentials' })
+  @ApiUnauthorizedResponse({ description: 'User not admin' })
+  @ApiBadGatewayResponse({ description: 'Unable to login' })
+  async loginAdmin(@Body() loginAdminDto: UserDto): Promise<LoginResponseDto> {
+    return await this.authService.loginAdmin(loginAdminDto);
+  }
 }
