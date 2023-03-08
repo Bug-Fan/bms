@@ -4,26 +4,26 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from "typeorm";
-import { Show } from "./show.entity";
-import { User } from "./user.entity";
+} from 'typeorm';
+import { Show } from './show.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Booking {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   bookingId: string;
 
   @ManyToOne(() => User, (u) => u.userId)
-  @JoinColumn({ name: "userId" })
+  @JoinColumn({ name: 'userId' })
   userId: string;
 
   @ManyToOne(() => Show, (u) => u.showId)
-  @JoinColumn({ name: "showId" })
+  @JoinColumn({ name: 'showId' })
   showId: string;
 
-  @Column("numeric", { array: true, default: [] })
+  @Column('numeric', { array: true, default: [] })
   seats: number[];
 
-  @Column("boolean")
+  @Column('boolean')
   paymentStatus: boolean;
 }
