@@ -7,8 +7,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
-  ApiTags,
-  ApiUnauthorizedResponse,
+  ApiTags
 } from "@nestjs/swagger";
 import { UserDto } from "src/dto/request/user.dto";
 import { LoginResponseDto } from "src/dto/response/login.response.dto";
@@ -20,7 +19,7 @@ import { AuthService } from "./auth.service";
 @UseInterceptors(LoggingInterceptor)
 @Controller("auth")
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post("register")
   @ApiBody({ type: UserDto })
