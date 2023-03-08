@@ -1,5 +1,5 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Show } from "./show.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Show } from './show.entity';
 
 @Entity()
 export class Screen {
@@ -10,6 +10,6 @@ export class Screen {
   @Column()
   screenName: string;
 
-  @Column({ type: "numeric", default: 500, scale: 0, precision: 3 })
+  @Column({ type: 'numeric', default: 500, scale: 0, precision: 3 })
   maxCapacity: number;
 }
