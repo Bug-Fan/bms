@@ -28,7 +28,7 @@ export class AuthController {
     type: RegistrationResponseDto,
     description: "User Registered",
   })
-  @ApiConflictResponse({ description: "User already Registered" })
+  @ApiConflictResponse({ description: "You are already registered! Please login" })
   async registerUser(
     @Body() registerUserDto: UserDto
   ): Promise<RegistrationResponseDto> {
@@ -38,8 +38,8 @@ export class AuthController {
   @Post("login")
   @ApiBody({ type: UserDto })
   @ApiOkResponse({ type: LoginResponseDto, description: "Login Successful" })
-  @ApiBadRequestResponse({ description: "Invalid credentials" })
-  @ApiNotFoundResponse({ description: "Not Registered" })
+  @ApiBadRequestResponse({ description: "Invalid username or password" })
+  @ApiNotFoundResponse({ description: "User not found" })
   @ApiBadGatewayResponse({ description: "Unable to login" })
   async loginUser(@Body() loginUserDto: UserDto): Promise<LoginResponseDto> {
     return await this.authService.loginUser(loginUserDto);
