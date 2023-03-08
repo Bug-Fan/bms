@@ -3,10 +3,10 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-} from '@nestjs/common';
-import { catchError, map, Observable } from 'rxjs';
-import { LogService } from 'src/db/log.service';
-import { LogRequestDto } from 'src/dto/request/log.request.dto';
+} from "@nestjs/common";
+import { catchError, map, Observable } from "rxjs";
+import { LogService } from "src/db/log.service";
+import { LogRequestDto } from "src/dto/request/log.request.dto";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -15,7 +15,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
   async intercept(
     context: ExecutionContext,
-    next: CallHandler,
+    next: CallHandler
   ): Promise<Observable<any>> {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest();
@@ -36,13 +36,13 @@ export class LoggingInterceptor implements NestInterceptor {
           map(async (value) => {
             this.logservice.addLogResponse(this.logId, value);
             return value;
-          }),
+          })
         )
         .pipe(
           catchError((err) => {
             this.logservice.addLogResponse(this.logId, err.response);
             throw err;
-          }),
+          })
         );
     }
   }
