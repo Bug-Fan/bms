@@ -1,10 +1,10 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Show } from "./show.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Show } from './show.entity';
 
 @Entity()
 export class Movie {
   @OneToMany(() => Show, (k) => k.movieId)
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   movieId: string;
 
   @Column()
@@ -13,7 +13,7 @@ export class Movie {
   @Column()
   movieDescription: string;
 
-  @Column({ type: "numeric", default: 1, scale: 0, precision: 3 })
+  @Column({ type: 'numeric', default: 1, scale: 0, precision: 3 })
   movieDuration: number;
 
   @Column()
