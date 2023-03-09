@@ -12,7 +12,7 @@ export class LogRequestDto {
     this.method = method;
     this.body = body;
     this.query = query;
-    if (userId !== "admin") {
+    if (userId !== 'admin') {
       this.userId = userId;
     } else {
       this.userId = null;
