@@ -5,7 +5,7 @@ import { Show } from './show.entity';
 export class Movie {
   @OneToMany(() => Show, (k) => k.movieId)
   @PrimaryGeneratedColumn('uuid')
-  movieId: string;
+  movieId: number;
 
   @Column()
   movieName: string;
@@ -13,7 +13,7 @@ export class Movie {
   @Column()
   movieDescription: string;
 
-  @Column({ type: 'numeric', default: 1, scale: 0, precision: 3 })
+  @Column({ type: 'numeric', default: 1 })
   movieDuration: number;
 
   @Column()

@@ -19,20 +19,27 @@ export class Show {
 
   @ManyToOne(() => Movie, (u) => u.movieId)
   @JoinColumn({ name: 'movieId' })
+  movie: Movie;
+  @Column()
   movieId: string;
 
   @ManyToOne(() => Screen, (u) => u.screenId)
   @JoinColumn({ name: 'screenId' })
+  screen: Screen;
+  @Column()
   screenId: number;
 
   @Column({ type: 'date' })
-  date: Date;
+  show_date: Date;
 
   @ManyToOne(() => Slot, (u) => u.slotId)
   @JoinColumn({ name: 'slotId' })
-  slotId: string;
+  slot: Slot;
+  @Column()
+  slotId: number;
 
-  @Column({ type: 'numeric', precision: 5, scale: 2 })
+
+  @Column({ type: 'numeric'})
   price: number;
 
   @Column()
