@@ -11,7 +11,7 @@ import { LogRequestDto } from 'src/dto/request/log.request.dto';
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   private logId: number;
-  constructor(private logservice: LogService) {}
+  constructor(private logservice: LogService) { }
 
   async intercept(
     context: ExecutionContext,
@@ -27,9 +27,13 @@ export class LoggingInterceptor implements NestInterceptor {
       const log = new LogRequestDto(host, path, method, body, query, userId);
       const generated = await this.logservice.addlog(log);
       this.logId = generated.identifiers[0].requestId;
-    } catch (error) {
+    }
+
+    catch (error) {
       console.log(error);
-    } finally {
+    }
+
+    finally {
       return next
         .handle()
         .pipe(

@@ -12,7 +12,6 @@ export class RoleGuard implements CanActivate {
     const request = ctx.getRequest();
     const { user } = request;
     const userRole = user ? user.role : 'guest';
-    console.log(userRole);
     return this.role === userRole;
   }
 }
