@@ -20,7 +20,6 @@ export class ScreenService {
       return new AddScreenResponsedto(true, `Screen ${ScreenDTO.screenName} added`)
     }
     catch (e) {
-      console.log(e);
       throw new BadRequestException('Cannot add new screen')
     }
   }
