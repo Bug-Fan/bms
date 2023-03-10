@@ -6,6 +6,7 @@ import { Slot } from 'src/db/entities/slot.entity';
 import { AddShowDTO } from 'src/dto/request/addShow.dto';
 import { SearchShowDTO } from 'src/dto/request/searchShow.dto';
 import { AddShowResponse } from 'src/dto/response/addShowResponse.dto';
+import { getShowsResponse } from 'src/dto/response/getShowsResponse.dto';
 import { DataSource } from 'typeorm';
 
 @Injectable()
@@ -53,24 +54,25 @@ export class ShowsService {
   }
 
   async getShows(movieDTO: SearchShowDTO) {
-    
+
     let result;
     try {
       let queryBuilder = this.dataSource.manager.createQueryBuilder();
       result = await queryBuilder.select("*")
         .from(Show, "show")
         .innerJoin("show.movie", 'mv')
+        .innerJoin("show.slot", "slot")
         .where("mv.movieName like :name", { name: movieDTO.movieName })
-        .andWhere("CAST (show.show_date AS DATE) >= CAST (:myDate AS DATE)",{myDate:new Date()})
+        .andWhere("CAST (show.show_date AS DATE) >= CAST (:myDate AS DATE)", { myDate: new Date() })
         .execute()
     }
     catch (e) {
       throw new BadRequestException(e.message)
     }
-      if(result && result.length > 0)
-        return result;
-      else
-        throw new NotFoundException("Shows do not exists on given movie name")
+    if (result && result.length > 0)
+      return new getShowsResponse(true, "Shows fetched", result);
+    else
+      throw new NotFoundException("Shows do not exists on given movie name")
   }
 
 }
