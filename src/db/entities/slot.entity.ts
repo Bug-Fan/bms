@@ -14,8 +14,8 @@ export class Slot {
   slotId: number;
 
   @Column({ type: 'time' })
-  startTime: Timestamp;
+  startTime: string;
 
   @Column({ type: 'time' })
-  finishTime: Timestamp;
+  finishTime: string;
 }
