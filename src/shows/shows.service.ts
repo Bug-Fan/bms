@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Movie } from 'src/db/entities/movie.entity';
 import { Screen } from 'src/db/entities/screen.entity';
 import { Show } from 'src/db/entities/show.entity';
@@ -14,22 +14,22 @@ export class ShowsService {
     @Inject('DataSource') private dataSource: DataSource
   ) { }
 
-  async addShow(show: AddShowDTO): Promise<any> {
-
+  async addShow(show: AddShowDTO): Promise<AddShowResponse> {
+    const dbManager = this.dataSource.manager;
     const { movieId, date, price, screenId, slotId } = show;
 
     let showExists;
     let availableSeats;
 
     try {
-      let qb = this.dataSource.manager.createQueryBuilder();
+      let qb = dbManager.createQueryBuilder();
 
       showExists = await qb.from(Show, "show")
         .where("show.screenId = :scrid", { scrid: screenId })
         .andWhere("show.slotId = :sltID", { sltID: slotId })
         .andWhere("CAST (show.show_date AS DATE)= CAST (:myDate AS DATE)", { myDate: date }).execute();
 
-      const screen = await this.dataSource.manager.findOneBy(Screen, { screenId })
+      const screen = await dbManager.findOneBy(Screen, { screenId })
       availableSeats = screen.maxCapacity;
     }
     catch (e) { throw new BadRequestException('Entered screen not available') }
@@ -37,14 +37,14 @@ export class ShowsService {
     if (showExists && showExists.length <= 0) {
 
       try {
-        await this.dataSource.manager.insert(Show, {
+        await dbManager.insert(Show, {
           movieId, show_date: date, price, screenId, slotId, availableSeats
         });
-        return new AddShowResponse(true,"Show added successfuly")
+        return new AddShowResponse(true, "Show added successfuly")
       }
 
       catch (e) {
-        throw new BadRequestException("Entered screen or slot not available")
+        throw new BadRequestException("Entered slot or movie not found")
       }
     }
     else
@@ -53,15 +53,24 @@ export class ShowsService {
   }
 
   async getShows(movieDTO: SearchShowDTO) {
+    
+    let result;
     try {
       let queryBuilder = this.dataSource.manager.createQueryBuilder();
-      let result = await queryBuilder.select("*").from(Show, "show").innerJoin("show.movie", 'mv').where("mv.movieName like :name", { name: movieDTO.movieName }).execute()
-      
-      return result;
-    } 
+      result = await queryBuilder.select("*")
+        .from(Show, "show")
+        .innerJoin("show.movie", 'mv')
+        .where("mv.movieName like :name", { name: movieDTO.movieName })
+        .andWhere("CAST (show.show_date AS DATE) >= CAST (:myDate AS DATE)",{myDate:new Date()})
+        .execute()
+    }
     catch (e) {
       throw new BadRequestException(e.message)
     }
+      if(result && result.length > 0)
+        return result;
+      else
+        throw new NotFoundException("Shows do not exists on given movie name")
   }
 
 }
