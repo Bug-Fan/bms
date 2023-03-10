@@ -1,30 +1,42 @@
-import { Body, Controller, Delete, Post, Query, Req } from '@nestjs/common';
-import { BookingRequestDto } from 'src/dto/request/booking.request.dto';
-import { CancelTicketsRequestDto } from 'src/dto/request/cancel.tickets.request.dto';
-import { BookingService } from './booking.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
+import { BookingRequestDto } from "src/dto/request/booking.request.dto";
+import { CancelRequestDto } from "src/dto/request/cancel.request.dto";
+import { BookingResoponseDto } from "src/dto/response/booking.response.dto";
+import { RoleGuard } from "src/guards/role.guard";
+import { LoggingInterceptor } from "src/interceptors/logging.interceptor";
+import { BookingService } from "./booking.service";
 
-@Controller('booking')
+@UseInterceptors(LoggingInterceptor)
+@UseGuards(AuthGuard("jwt"), new RoleGuard("user"))
+@Controller("booking")
 export class BookingController {
   constructor(private bookingService: BookingService) {}
 
-  // @Get('shows')
-  // @Redirect('localhost:3000/shows/get')
-  // getShows() {
-  //   return;
-  // }
-
-  @Post('book')
-  async bookTickets(@Body() bookingRequestDto: BookingRequestDto, @Req() req) {
+  @Post("book")
+  async bookTickets(
+    @Body() bookingRequestDto: BookingRequestDto,
+    @Req() req
+  ): Promise<BookingResoponseDto> {
     return await this.bookingService.bookTickets(
       bookingRequestDto,
-      req.user?.userId,
+      req.user.userId
     );
   }
 
-  @Delete('cancel')
+  @Delete("cancel")
   async cancelTickets(
-    @Query() cancelTicketsRequestDto: CancelTicketsRequestDto,
+    @Query() cancelRequestDto: CancelRequestDto
   ) {
-    return await this.bookingService.cancelTickets(cancelTicketsRequestDto);
+    return await this.bookingService.cancelBooking(cancelRequestDto);
   }
 }

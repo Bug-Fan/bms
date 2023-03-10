@@ -15,10 +15,14 @@ export class Booking {
 
   @ManyToOne(() => User, (u) => u.userId)
   @JoinColumn({ name: 'userId' })
+  user: User;
+  @Column()
   userId: string;
 
   @ManyToOne(() => Show, (u) => u.showId)
   @JoinColumn({ name: 'showId' })
+  show: Show;
+  @Column()
   showId: string;
 
   @Column('numeric', { array: true, default: [] })
