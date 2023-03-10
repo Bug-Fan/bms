@@ -13,11 +13,15 @@ export class ScreenService {
 
   async addScreen(ScreenDTO: AddScreenDTO) {
     try {
-      let screen = await this.dataSource.manager.insert(Screen, ScreenDTO)
+      let screen = await this.dataSource.manager.insert(Screen, {
+        maxCapacity:ScreenDTO.maxCapacity,
+        screenName:ScreenDTO.screenName
+      })
       return new AddScreenResponsedto(true, `Screen ${ScreenDTO.screenName} added`)
     }
     catch (e) {
-      throw new BadRequestException('Can not add new Screen')
+      console.log(e);
+      throw new BadRequestException('Cannot add new screen')
     }
   }
 

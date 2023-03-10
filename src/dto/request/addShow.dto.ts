@@ -1,9 +1,9 @@
 import { BadRequestException } from "@nestjs/common";
 import { Transform } from "class-transformer";
-import { IsDate, IsDateString, IsNumber, IsUUID, Validate, ValidationArguments, ValidatorConstraintInterface } from "class-validator";
+import { MaxDate, MinDate, IsDate, IsDateString, IsNumber, IsUUID, Validate, ValidationArguments, ValidatorConstraintInterface } from "class-validator";
 
 export class AddShowDTO {
-  
+
   @IsUUID()
   movieId: string;
 
@@ -14,13 +14,16 @@ export class AddShowDTO {
   slotId: number;
 
   @Transform((o) => {
+    let currentDate = new Date();
+    currentDate.setDate(currentDate.getDate() - 1)
     let date = new Date(o.value)
-    if (date < new Date())
-      throw new BadRequestException('Date should be latest')
+    if (date < currentDate)
+      throw new BadRequestException('Date should be future date')
     else
       return date;
   })
   @IsDate()
+
   date: Date;
 
   @IsNumber()

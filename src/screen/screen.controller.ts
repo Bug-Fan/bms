@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AddScreenDTO } from 'src/dto/request/addscreen.dto';
 import { ScreenService } from './screen.service';
 
@@ -11,7 +11,7 @@ export class ScreenController {
 
   
   @Post('add')
-  addScreen(addScreenDTo:AddScreenDTO){
+  addScreen(@Body() addScreenDTo:AddScreenDTO){
     return this.screenService.addScreen(addScreenDTo);
   }
 }
