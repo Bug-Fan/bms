@@ -34,9 +34,10 @@ export class BookingController {
   }
 
   @Delete("cancel")
-  async cancelTickets(
-    @Query() cancelRequestDto: CancelRequestDto
-  ) {
-    return await this.bookingService.cancelBooking(cancelRequestDto);
+  async cancelTickets(@Query() cancelRequestDto: CancelRequestDto, @Req() req) {
+    return await this.bookingService.cancelBooking(
+      cancelRequestDto,
+      req.user.userId
+    );
   }
 }
