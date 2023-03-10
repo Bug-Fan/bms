@@ -73,12 +73,13 @@ export class BookingService {
     }
   }
 
-  async cancelBooking(cancelTicketsRequestDto: CancelRequestDto) {
+  async cancelBooking(cancelTicketsRequestDto: CancelRequestDto, userId) {
     const { bookingId } = cancelTicketsRequestDto;
 
     try {
       const booking = await this.dataSource.manager.findOneBy(Booking, {
         bookingId,
+        userId,
       });
       if (!booking) {
         throw new NotFoundException();
