@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext } from '@nestjs/common';
+import { CanActivate, ExecutionContext } from "@nestjs/common";
 
 export class RoleGuard implements CanActivate {
   private role: string;
@@ -11,7 +11,7 @@ export class RoleGuard implements CanActivate {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest();
     const { user } = request;
-    const userRole = user ? user.role : 'guest';
+    const userRole = user ? user.role : "guest";
     return this.role === userRole;
   }
 }

@@ -5,41 +5,40 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Booking } from './booking.entity';
-import { Movie } from './movie.entity';
-import { Screen } from './screen.entity';
-import { Slot } from './slot.entity';
+} from "typeorm";
+import { Booking } from "./booking.entity";
+import { Movie } from "./movie.entity";
+import { Screen } from "./screen.entity";
+import { Slot } from "./slot.entity";
 
 @Entity()
 export class Show {
   @OneToMany(() => Booking, (k) => k.showId)
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   showId: string;
 
   @ManyToOne(() => Movie, (u) => u.movieId)
-  @JoinColumn({ name: 'movieId' })
+  @JoinColumn({ name: "movieId" })
   movie: Movie;
   @Column()
   movieId: string;
 
   @ManyToOne(() => Screen, (u) => u.screenId)
-  @JoinColumn({ name: 'screenId' })
+  @JoinColumn({ name: "screenId" })
   screen: Screen;
   @Column()
   screenId: number;
 
-  @Column({ type: 'date' })
+  @Column({ type: "date" })
   show_date: Date;
 
   @ManyToOne(() => Slot, (u) => u.slotId)
-  @JoinColumn({ name: 'slotId' })
+  @JoinColumn({ name: "slotId" })
   slot: Slot;
   @Column()
   slotId: number;
 
-
-  @Column({ type: 'numeric'})
+  @Column({ type: "numeric" })
   price: number;
 
   @Column()
