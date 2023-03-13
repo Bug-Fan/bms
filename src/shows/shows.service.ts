@@ -28,15 +28,13 @@ export class ShowsService {
     let availableSeats;
 
     try {
-      // let qb = dbManager.createQueryBuilder();
+    
       showExists = await dbManager.find(Show, {
         where: [
           {start_date_time: Between(startDateTime, endDateTime)},
           {end_date_time: Between(startDateTime, endDateTime)},
         ],
       });
-
-      console.log(showExists);
     } catch (e) {
       console.log(e);
       throw new BadRequestException("Entered screen not available");
@@ -54,7 +52,7 @@ export class ShowsService {
         });
         return new AddShowResponse(true, "Show added successfuly");
       } catch (e) {
-        throw new BadRequestException("Entered slot or movie not found");
+        throw new BadRequestException("Entered movie not found");
       }
     } else throw new BadRequestException("Slot already have show");
   }
