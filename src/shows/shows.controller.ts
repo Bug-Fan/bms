@@ -3,6 +3,7 @@ import { Body, Query, UseGuards } from "@nestjs/common/decorators";
 import { AuthGuard } from "@nestjs/passport";
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
   ApiNotFoundResponse,
@@ -24,6 +25,7 @@ export class ShowsController {
 
   @UseGuards(AuthGuard("jwt"), new RoleGuard(UserRoles.admin))
   @Post()
+  @ApiBearerAuth()
   @ApiBody({ type: AddShowDTO })
   @ApiCreatedResponse({
     type: AddShowResponse,

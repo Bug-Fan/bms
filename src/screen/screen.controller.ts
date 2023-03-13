@@ -2,6 +2,7 @@ import { Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
   ApiTags,
@@ -13,6 +14,7 @@ import { RoleGuard } from "src/guards/role.guard";
 import { ScreenService } from "./screen.service";
 
 @ApiTags("Screen")
+@ApiBearerAuth()
 @Controller("screen")
 export class ScreenController {
   constructor(private screenService: ScreenService) {}

@@ -11,6 +11,7 @@ import {
 import { AuthGuard } from "@nestjs/passport";
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
@@ -27,6 +28,7 @@ import { LoggingInterceptor } from "src/interceptors/logging.interceptor";
 import { BookingService } from "./booking.service";
 
 @ApiTags("Booking")
+@ApiBearerAuth()
 @UseInterceptors(LoggingInterceptor)
 @UseGuards(AuthGuard("jwt"), new RoleGuard("user"))
 @Controller("booking")
