@@ -9,7 +9,7 @@ import { Show } from './show.entity';
 
 @Entity()
 export class Slot {
-  @OneToMany(() => Show, (k) => k.slotId)
+  // @OneToMany(() => Show, (k) => k.slotId)
   @PrimaryGeneratedColumn()
   slotId: number;
 
