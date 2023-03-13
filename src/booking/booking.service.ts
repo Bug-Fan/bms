@@ -67,13 +67,16 @@ export class BookingService {
         );
       } else if (error.status === 409) {
         throw new ConflictException(
-          "One your selected seats is already booked."
+          "One of your selected seats is already booked."
         );
       }
     }
   }
 
-  async cancelBooking(cancelTicketsRequestDto: CancelRequestDto, userId) {
+  async cancelBooking(
+    cancelTicketsRequestDto: CancelRequestDto,
+    userId
+  ): Promise<CancelResponseDto> {
     const { bookingId } = cancelTicketsRequestDto;
 
     try {
@@ -95,15 +98,12 @@ export class BookingService {
         numberOfSeats
       );
       if (canceled.affected === 1) {
-        return new CancelResponseDto(
-          true,
-          "Your booking has been canceled."
-        );
+        return new CancelResponseDto(true, "Your booking has been canceled.");
       }
     } catch (error) {
       console.log(error);
       if (error.status === 404) {
-        throw new NotFoundException("Your booking cannot be found");
+        throw new NotFoundException("Your booking cannot be found.");
       }
     }
   }
