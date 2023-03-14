@@ -12,7 +12,7 @@ import { AddShowDTO } from "src/dto/request/addShow.dto";
 import { SearchShowDTO } from "src/dto/request/searchShow.dto";
 import { AddShowResponse } from "src/dto/response/addShowResponse.dto";
 import { getShowsResponse } from "src/dto/response/getShowsResponse.dto";
-import { DataSource,Between } from "typeorm";
+import { DataSource, Between, Like } from "typeorm";
 
 @Injectable()
 export class ShowsService {
@@ -28,27 +28,26 @@ export class ShowsService {
     let availableSeats;
 
     try {
-    
       showExists = await dbManager.find(Show, {
         where: [
-          {start_date_time: Between(startDateTime, endDateTime)},
-          {end_date_time: Between(startDateTime, endDateTime)},
+          { startDateTime: Between(startDateTime, endDateTime) },
+          { endDateTime: Between(startDateTime, endDateTime) },
         ],
       });
     } catch (e) {
       console.log(e);
       throw new BadRequestException("Entered screen not available");
     }
-    console.log(startDateTime,endDateTime);
+    console.log(showExists);
     if (showExists && showExists.length <= 0) {
       try {
         await dbManager.insert(Show, {
           movieId,
-          start_date_time: startDateTime,
-          end_date_time: endDateTime,
+          startDateTime,
+          endDateTime,
           price,
           screenId,
-          availableSeats:200,
+          availableSeats: 200,
         });
         return new AddShowResponse(true, "Show added successfuly");
       } catch (e) {
@@ -60,16 +59,16 @@ export class ShowsService {
   async getShows(movieDTO: SearchShowDTO) {
     let result;
     try {
+  
       let queryBuilder = this.dataSource.manager.createQueryBuilder();
       result = await queryBuilder
-        .select("*")
         .from(Show, "show")
         .innerJoin("show.movie", "mv")
-        .innerJoin("show.slot", "slot")
         .where("mv.movieName like :name", { name: movieDTO.movieName })
-        .andWhere("CAST (show.show_date AS DATE) >= CAST (:myDate AS DATE)", {
-          myDate: new Date(),
-        })
+        .andWhere(
+          "CAST (show.startDateTime AS DATE) >= CAST (:myDate AS DATE)",{
+            myDate: new Date(),
+          })
         .execute();
     } catch (e) {
       throw new BadRequestException(e.message);

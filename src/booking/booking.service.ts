@@ -47,11 +47,10 @@ export class BookingService {
       const confirmed = await this.dataSource.manager
         .createQueryBuilder()
         .select(
-          "booking.bookingId, booking.seats, movie.movieName, slot.startTime, show.show_date, screen.screenId, screen.screenName"
+          "booking.bookingId, booking.seats, movie.movieName, show.startDateTime, screen.screenId, screen.screenName"
         )
         .from(Booking, "booking")
         .innerJoin("booking.show", "show")
-        .innerJoin("show.slot", "slot")
         .innerJoin("show.movie", "movie")
         .innerJoin("show.screen", "screen")
         .where("booking.bookingId=:bookingId", { bookingId })

@@ -7,14 +7,14 @@ import { SearchShowDTO } from 'src/dto/request/searchShow.dto';
 import { AddShowResponse } from 'src/dto/response/addShowResponse.dto';
 import { RoleGuard } from 'src/guards/role.guard';
 import { ShowsService } from './shows.service';
-import { DateValidationPipe } from '../pipes/datevalidation.pipe'
+import { DateValidate } from '../pipes/dateValidation.pipe'
 
 @Controller("shows")
 export class ShowsController {
   constructor(private showService: ShowsService) {}
 
   @UseGuards(AuthGuard("jwt"), new RoleGuard(UserRoles.admin))
-  @UsePipes(new DateValidationPipe())
+  @UsePipes(new DateValidate())
   @Post()
   addShow(@Body() show: AddShowDTO): Promise<AddShowResponse> {
     return this.showService.addShow(show);

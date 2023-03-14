@@ -21,6 +21,7 @@ export class Show {
   @ManyToOne(() => Movie, (u) => u.movieId)
   @JoinColumn({ name: "movieId" })
   movie: Movie;
+  
   @Column()
   movieId: string;
 
@@ -39,11 +40,11 @@ export class Show {
   // @Column()
   // slotId: number;
 
-  @Column({ type: "timestamptz"})
-  start_date_time: Timestamp;
+  @Column({ type: "timestamptz", precision: 3 })
+  startDateTime: Timestamp;
 
-  @Column({ type: "timestamptz" })
-  end_date_time: Timestamp;
+  @Column({ type: "timestamptz", precision: 3 })
+  endDateTime: Timestamp;
 
   @Column({ type: "numeric" })
   price: number;
