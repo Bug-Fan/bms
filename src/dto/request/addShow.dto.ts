@@ -37,16 +37,10 @@ export class AddShowDTO {
     required: true,
   })
   
-  @Transform(({ value }) => new Date(value))
-  @IsDate()
-  @MinDate(new Date())
+  @IsDateString()
   startDateTime: Date;
 
-  
-  @Transform(({ value }) => new Date(value))
-  @IsDate()
-  @MinDate(new Date())
-  
+  @IsDateString()
   endDateTime: Date;
 
   @ApiProperty({

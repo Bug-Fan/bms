@@ -1,3 +1,5 @@
+import * as moment from 'moment-timezone'
+
 export class getShowsResponse{
   status:boolean;
   message:string;
@@ -24,7 +26,8 @@ export class showObject{
 
   constructor(obj){
    this.showId = obj.showId; 
-  this.show_date = obj.show_date;
+   
+  this.show_date = moment(obj.startDateTime).tz('Asia/Kolkata').format('');
   this.price = obj.price;
   this.availableSeats = obj.availableSeats ;
   this.screenId = obj.screenId;
