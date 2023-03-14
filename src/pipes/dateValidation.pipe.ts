@@ -7,8 +7,11 @@ export class DateValidate implements PipeTransform{
        let startDateTime = value.startDateTime;
        let endDateTime = value.endDateTime;
 
-       if(new Date(startDateTime) < new Date(endDateTime)){
+       if(new Date(startDateTime) < new Date(endDateTime) ){
         return value;
+       }
+       if(new Date(startDateTime) < new Date()){
+        throw new BadRequestException("Startdate must be future date");
        }
        else{
         throw new BadRequestException("StartDate should less than EndDate")
