@@ -15,7 +15,7 @@ import { SearchShowDTO } from "src/dto/request/searchShow.dto";
 import { AddShowResponse } from "src/dto/response/addShowResponse.dto";
 import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { getShowsResponse } from "src/dto/response/getShowsResponse.dto";
-import { DataSource, Between, Like } from "typeorm";
+import { DataSource, Between, Like, FindOperator } from "typeorm";
 
 @Injectable()
 export class ShowsService {
@@ -63,22 +63,29 @@ export class ShowsService {
 
   async getShows(movieDTO: SearchShowDTO) {
     let result;
+
     try {
       let queryBuilder = this.dataSource.manager.createQueryBuilder();
-      result = await queryBuilder
+
+      queryBuilder
         .from(Show, "show")
         .innerJoin("show.movie", "mv")
-        .where("mv.movieName like :name", { name: movieDTO.movieName })
-        .andWhere(
-          "CAST (show.startDateTime AS DATE) >= CAST (:myDate AS DATE)",
-          {
-            myDate: new Date(),
-          }
-        )
-        .execute();
+        .innerJoin("show.screen", "scr")
+        .where("show.startDateTime  >= :myDate ", {
+          myDate: new Date(),
+        });
+      
+      if (movieDTO.movieName)
+        queryBuilder.andWhere("mv.movieName like :name", {
+          name: movieDTO.movieName,
+        });
+
+      result = await queryBuilder.execute();
+    
     } catch (e) {
       throw new BadRequestException(e.message);
     }
+
     if (result && result.length > 0)
       return new getShowsResponse(true, "Shows fetched", result);
     else throw new NotFoundException("Shows do not exists on given movie name");
