@@ -10,7 +10,6 @@ import {
 import { Booking } from './booking.entity';
 import { Movie } from './movie.entity';
 import { Screen } from './screen.entity';
-import { Slot } from './slot.entity';
 
 @Entity()
 export class Show {
@@ -31,15 +30,6 @@ export class Show {
   @Column()
   screenId: number;
 
-  // @Column({ type: "date" })
-  // show_date: Date;
-
-  // @ManyToOne(() => Slot, (u) => u.slotId)
-  // @JoinColumn({ name: 'slotId' })
-  // slot: Slot;
-  // @Column()
-  // slotId: number;
-
   @Column({ type: "timestamptz", precision: 3 })
   startDateTime: Timestamp;
 
@@ -49,6 +39,9 @@ export class Show {
   @Column({ type: "numeric" })
   price: number;
 
-  @Column()
-  availableSeats: number;
+  @Column('numeric', { array: true })
+  availableSeats: number[];
+
+  @Column('boolean', { default: true })
+  isActive: boolean;
 }
