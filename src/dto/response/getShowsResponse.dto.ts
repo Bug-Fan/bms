@@ -23,10 +23,10 @@ export class showObject{
   movieDescription
   movieLanguage
   startTime
-
+  screenName
   constructor(obj){
-   this.showId = obj.showId; 
-   
+  this.showId = obj.showId; 
+  this.screenName = obj.screenName; 
   this.show_date = moment(obj.startDateTime).tz('Asia/Kolkata').format('');
   this.price = obj.price;
   this.availableSeats = obj.availableSeats ;
