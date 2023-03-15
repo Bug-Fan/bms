@@ -3,9 +3,9 @@ import { DataSource } from 'typeorm';
 import { Booking } from './entities/booking.entity';
 import { Log } from './entities/log.entity';
 import { Movie } from './entities/movie.entity';
+import { Refund } from './entities/refund.entity';
 import { Screen } from './entities/screen.entity';
 import { Show } from './entities/show.entity';
-import { Slot } from './entities/slot.entity';
 import { User } from './entities/user.entity';
 
 export const DbConnection = [
@@ -20,7 +20,7 @@ export const DbConnection = [
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
         synchronize: true,
-        entities: [User, Log, Booking, Movie, Screen, Show, Slot],
+        entities: [User, Log, Booking, Movie, Screen, Show, Refund],
         logging: true,
       });
       return await datasource.initialize();
