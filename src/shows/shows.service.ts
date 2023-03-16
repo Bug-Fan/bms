@@ -10,12 +10,13 @@ import { Refund } from "src/db/entities/refund.entity";
 import { Screen } from "src/db/entities/screen.entity";
 import { Show } from "src/db/entities/show.entity";
 import { AddShowDTO } from "src/dto/request/addShow.dto";
+import { AvailableSeatDto } from "src/dto/request/availableseat.dto";
 import { CancelShowDto } from "src/dto/request/cancel.show.dto";
 import { SearchShowDTO } from "src/dto/request/searchShow.dto";
 import { AddShowResponse } from "src/dto/response/addShowResponse.dto";
 import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { getShowsResponse } from "src/dto/response/getShowsResponse.dto";
-import { DataSource, Between, Like, FindOperator, Brackets } from "typeorm";
+import { DataSource, Brackets } from "typeorm";
 
 @Injectable()
 export class ShowsService {
@@ -36,8 +37,9 @@ export class ShowsService {
         .where("show.screenId = :scrid")
         .andWhere(
           new Brackets((qb) => {
-            qb.where("(show.startDateTime BETWEEN :start AND :end)")
-            .orWhere("(show.endDateTime BETWEEN :start AND :end)");
+            qb.where("(show.startDateTime BETWEEN :start AND :end)").orWhere(
+              "(show.endDateTime BETWEEN :start AND :end)"
+            );
           })
         )
         .setParameters({
@@ -146,5 +148,20 @@ export class ShowsService {
         throw new BadRequestException("Unable to cancel show.");
       }
     }
+  }
+
+  async getAvailableSeats(availableSeatDto: AvailableSeatDto) {
+    let result;
+    try {
+      result = this.dataSource.manager.findOne(Show, {
+        select: { availableSeats: true },
+        where: { showId: availableSeatDto.showId },
+      });
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+
+    if (result) return result;
+    else throw new NotFoundException(`Show doesn't exist`);
   }
 }
