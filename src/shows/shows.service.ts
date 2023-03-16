@@ -15,7 +15,7 @@ import { SearchShowDTO } from "src/dto/request/searchShow.dto";
 import { AddShowResponse } from "src/dto/response/addShowResponse.dto";
 import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { getShowsResponse } from "src/dto/response/getShowsResponse.dto";
-import { DataSource, Between, Like, FindOperator } from "typeorm";
+import { DataSource, Between, Like, FindOperator, Brackets } from "typeorm";
 
 @Injectable()
 export class ShowsService {
@@ -30,19 +30,29 @@ export class ShowsService {
     let showExists, maxCapacity, availableSeats;
 
     try {
-      showExists = await dbManager.find(Show, {
-        where: [
-          { startDateTime: Between(startDateTime, endDateTime) },
-          { endDateTime: Between(startDateTime, endDateTime) },
-        ],
-      });
+      let qb = await dbManager.createQueryBuilder();
+      showExists = await qb
+        .from(Show, "show")
+        .where("show.screenId = :scrid")
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where("(show.startDateTime BETWEEN :start AND :end)")
+            .orWhere("(show.endDateTime BETWEEN :start AND :end)");
+          })
+        )
+        .setParameters({
+          scrid: screenId,
+          start: startDateTime,
+          end: endDateTime,
+        })
+        .execute();
+
       const screen = await dbManager.findOneBy(Screen, { screenId });
       maxCapacity = screen.maxCapacity;
     } catch (e) {
-      console.log(e);
       throw new BadRequestException("Entered screen not available");
     }
-    console.log(showExists);
+
     if (showExists && showExists.length <= 0 && maxCapacity) {
       availableSeats = [...Array(+maxCapacity).keys()].map((x) => ++x);
       try {
@@ -74,14 +84,13 @@ export class ShowsService {
         .where("show.startDateTime  >= :myDate ", {
           myDate: new Date(),
         });
-      
+
       if (movieDTO.movieName)
         queryBuilder.andWhere("mv.movieName like :name", {
           name: movieDTO.movieName,
         });
 
       result = await queryBuilder.execute();
-    
     } catch (e) {
       throw new BadRequestException(e.message);
     }
@@ -128,7 +137,6 @@ export class ShowsService {
       } else {
         throw new NotFoundException();
       }
-      
     } catch (error) {
       if (error.status === 404) {
         throw new NotFoundException(
