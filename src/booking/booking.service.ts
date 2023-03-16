@@ -55,6 +55,7 @@ export class BookingService {
         .innerJoin("show.screen", "screen")
         .where("booking.bookingId=:bookingId", { bookingId })
         .execute();
+        
       return new BookingResoponseDto(confirmed[0]);
     } catch (error) {
       console.log(error);
