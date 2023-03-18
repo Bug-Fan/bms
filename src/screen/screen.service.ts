@@ -1,6 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Screen } from 'src/db/entities/screen.entity';
-import { Show } from 'src/db/entities/show.entity';
 import { AddScreenDTO } from 'src/dto/request/addscreen.dto';
 import { AddScreenResponsedto } from 'src/dto/response/addscreenresponse.dto';
 import { DataSource } from 'typeorm';

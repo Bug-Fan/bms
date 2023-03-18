@@ -1,8 +1,5 @@
-import { BadRequestException } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
-import { MaxDate, MinDate, IsDate, IsDateString, IsNumber, IsUUID, Validate, ValidationArguments, ValidatorConstraintInterface, IsInt, IsIn, isDateString, IsTimeZone, IsBoolean } from "class-validator";
-import { Timestamp } from "typeorm";
+import { IsDateString, IsNumber, IsUUID, IsInt } from "class-validator";
 
 export class AddShowDTO {
   @ApiProperty({

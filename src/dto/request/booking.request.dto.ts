@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 import {
   ArrayNotEmpty,
+  ArrayUnique,
   IsArray,
   IsNotEmpty,
   IsNumber,
+  IsPositive,
   IsUUID,
 } from 'class-validator';
 
@@ -28,8 +29,7 @@ export class BookingRequestDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsNumber({}, { each: true })
-  @Transform((o) => {
-    return Array.from(new Set(o.value));
-  })
+  @IsPositive({ each: true })
+  @ArrayUnique()
   seats: number[];
 }

@@ -5,7 +5,6 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { Booking } from "src/db/entities/booking.entity";
-import { Movie } from "src/db/entities/movie.entity";
 import { Refund } from "src/db/entities/refund.entity";
 import { Screen } from "src/db/entities/screen.entity";
 import { Show } from "src/db/entities/show.entity";
@@ -15,7 +14,7 @@ import { SearchShowDTO } from "src/dto/request/searchShow.dto";
 import { AddShowResponse } from "src/dto/response/addShowResponse.dto";
 import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { getShowsResponse } from "src/dto/response/getShowsResponse.dto";
-import { DataSource, Between, Like } from "typeorm";
+import { DataSource, Between, EntityManager, InsertResult } from "typeorm";
 
 @Injectable()
 export class ShowsService {
@@ -32,8 +31,11 @@ export class ShowsService {
     try {
       showExists = await dbManager.find(Show, {
         where: [
-          { startDateTime: Between(startDateTime, endDateTime) },
-          { endDateTime: Between(startDateTime, endDateTime) },
+          {
+            screenId,
+            startDateTime: Between(startDateTime, endDateTime),
+            endDateTime: Between(startDateTime, endDateTime),
+          },
         ],
       });
       const screen = await dbManager.findOneBy(Screen, { screenId });
@@ -42,9 +44,10 @@ export class ShowsService {
       console.log(e);
       throw new BadRequestException("Entered screen not available");
     }
-    console.log(showExists);
+
     if (showExists && showExists.length <= 0 && maxCapacity) {
       availableSeats = [...Array(+maxCapacity).keys()].map((x) => ++x);
+
       try {
         await dbManager.insert(Show, {
           movieId,
@@ -54,11 +57,12 @@ export class ShowsService {
           screenId,
           availableSeats,
         });
+
         return new AddShowResponse(true, "Show added successfuly");
       } catch (e) {
         throw new BadRequestException("Entered movie not found");
       }
-    } else throw new BadRequestException("Slot already have show");
+    } else throw new BadRequestException("Slot already has show");
   }
 
   async getShows(movieDTO: SearchShowDTO) {
@@ -95,24 +99,33 @@ export class ShowsService {
       );
 
       if (showCanceled.affected === 1) {
-        const bookings = await this.dataSource.manager.find(Booking, {
-          select: { bookingId: true },
-          where: { showId },
-        });
+        const refundInitiated = await this.dataSource.manager.transaction(
+          async (em: EntityManager): Promise<InsertResult> => {
+            
+            const bookings = await em.find(Booking, {
+              select: { bookingId: true },
+              where: { showId },
+            });
 
-        const refunds = bookings.map((element) => {
-          return this.dataSource.manager.create(Refund, {
-            bookingId: element.bookingId,
-            refundStatus: false,
-          });
-        });
+            await em.update(
+              Booking,
+              { showId, isCanceled: false },
+              { isCanceled: true }
+            );
 
-        const refundInitiated = await this.dataSource.manager.insert(
-          Refund,
-          refunds
+            const refunds = bookings.map((element) => {
+              return em.create(Refund, {
+                bookingId: element.bookingId,
+              });
+            });
+
+            const refundInitiated = await em.insert(Refund, refunds);
+
+            return refundInitiated;
+          }
         );
 
-        if (refundInitiated) {
+        if (refundInitiated.identifiers.length >= 1) {
           return new CancelResponseDto(
             true,
             "Show has been canceled and refund is initiated for all bookings."
@@ -121,7 +134,6 @@ export class ShowsService {
       } else {
         throw new NotFoundException();
       }
-      
     } catch (error) {
       if (error.status === 404) {
         throw new NotFoundException(

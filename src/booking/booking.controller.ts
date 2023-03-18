@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Post,
   Query,
   Req,
@@ -39,5 +40,10 @@ export class BookingController {
       cancelRequestDto,
       req.user.userId
     );
+  }
+
+  @Get("bookings")
+  async getAllBookings(@Req() req) {
+    return await this.bookingService.getAllBookings(req.user.userId);
   }
 }
