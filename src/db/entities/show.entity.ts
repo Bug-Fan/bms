@@ -39,7 +39,7 @@ export class Show {
   @Column({ type: "numeric" })
   price: number;
 
-  @Column('numeric', { array: true })
+  @Column('integer', { array: true })
   availableSeats: number[];
 
   @Column('boolean', { default: true })

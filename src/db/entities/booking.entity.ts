@@ -30,4 +30,10 @@ export class Booking {
 
   @Column('boolean')
   paymentStatus: boolean;
+
+  @Column('numeric')
+  totalPrice: number;
+
+  @Column('boolean', { default: false })
+  isCanceled: boolean;
 }
