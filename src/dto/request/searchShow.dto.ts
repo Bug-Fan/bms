@@ -4,10 +4,11 @@ export class SearchShowDTO {
   @IsNotEmpty()
   @IsString()
   @ApiProperty({
-    name:'movieName',
-    description:"name of movie to search",
-    required:true,
-    type:'string'
+    name: "movieName",
+    description: "Name of movie to search.",
+    required: true,
+    type: "string",
+    example: "Fan",
   })
-  movieName: string
+  movieName: string;
 }

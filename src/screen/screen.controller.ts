@@ -1,20 +1,35 @@
-import { Body, Controller, Post,UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { UserRoles } from 'src/db/user.role';
-import { AddScreenDTO } from 'src/dto/request/addscreen.dto';
-import { RoleGuard } from 'src/guards/role.guard';
-import { ScreenService } from './screen.service';
+import { Body, Controller, Post, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiTags,
+} from "@nestjs/swagger";
+import { UserRoles } from "src/db/user.role";
+import { AddScreenDTO } from "src/dto/request/addscreen.dto";
+import { AddScreenResponsedto } from "src/dto/response/addscreenresponse.dto";
+import { RoleGuard } from "src/guards/role.guard";
+import { ScreenService } from "./screen.service";
 
-@Controller('screen')
+@ApiTags("Screen")
+@ApiBearerAuth()
+@Controller("screen")
 export class ScreenController {
+  constructor(private screenService: ScreenService) {}
 
-  constructor(
-    private screenService: ScreenService
-  ) { }
-
-  @UseGuards(AuthGuard('jwt'),new RoleGuard(UserRoles.admin))
-  @Post('add')
-  addScreen(@Body() addScreenDTo:AddScreenDTO){
+  @UseGuards(AuthGuard("jwt"), new RoleGuard(UserRoles.admin))
+  @Post("add")
+  @ApiBody({ type: AddScreenDTO })
+  @ApiCreatedResponse({
+    type: AddScreenResponsedto,
+    description: "Screen added.",
+  })
+  @ApiBadRequestResponse({
+    description: "Cannot add screen.",
+  })
+  addScreen(@Body() addScreenDTo: AddScreenDTO) {
     return this.screenService.addScreen(addScreenDTo);
   }
 }
