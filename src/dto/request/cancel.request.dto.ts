@@ -9,7 +9,6 @@ export class CancelRequestDto {
     required: true,
     example: "d3cbb59b-998d-48a1-9e25-6f45364fc486",
   })
-  @IsNotEmpty()
   @IsUUID()
   bookingId: string;
 }

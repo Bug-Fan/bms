@@ -25,7 +25,7 @@ export class AddShowDTO {
 
  
   @ApiProperty({
-    name: "date",
+    name: "startDateTime",
     description: "date on which the movie will be shown",
     type: "date",
     required: true,
@@ -33,6 +33,12 @@ export class AddShowDTO {
   @IsDateString()
   startDateTime: Date;
 
+  @ApiProperty({
+    name: "date",
+    description: "Time on which the movie will end",
+    type: "date",
+    required: true,
+  })
   @IsDateString()
   endDateTime: Date;
 

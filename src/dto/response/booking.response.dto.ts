@@ -34,7 +34,7 @@ export class BookingResoponseDto {
   totalPrice: number;
 
   constructor(confirmed) {
-    const { bookingId, movieName, startDateTime, startTime, screenId, screenName, seats, totalPrice } = confirmed;
+    const { bookingId, movieName, startDateTime, screenId, screenName, seats, totalPrice } = confirmed;
     this.bookingId = bookingId;
     this.movieName = movieName;
     this.showDate = moment(startDateTime).tz("Asia/Kolkata").format("");
