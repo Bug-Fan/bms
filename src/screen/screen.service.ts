@@ -6,21 +6,20 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class ScreenService {
-  constructor(
-    @Inject('DataSource') private dataSource: DataSource
-  ) { }
+  constructor(@Inject("DataSource") private dataSource: DataSource) {}
 
   async addScreen(ScreenDTO: AddScreenDTO) {
     try {
       let screen = await this.dataSource.manager.insert(Screen, {
-        maxCapacity:ScreenDTO.maxCapacity,
-        screenName:ScreenDTO.screenName
-      })
-      return new AddScreenResponsedto(true, `Screen ${ScreenDTO.screenName} added`)
-    }
-    catch (e) {
-      throw new BadRequestException('Cannot add new screen')
+        maxCapacity: ScreenDTO.maxCapacity,
+        screenName: ScreenDTO.screenName,
+      });
+      return new AddScreenResponsedto(
+        true,
+        `Screen ${ScreenDTO.screenName} added`
+      );
+    } catch (e) {
+      throw new BadRequestException("Cannot add new screen.");
     }
   }
-
 }

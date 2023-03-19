@@ -5,8 +5,8 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { User } from './user.entity';
+} from "typeorm";
+import { User } from "./user.entity";
 
 @Entity()
 export class Log {
@@ -22,14 +22,14 @@ export class Log {
   @Column()
   method: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: "text" })
   body: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: "text" })
   query: string;
 
   @ManyToOne(() => User, (u) => u.userId, { nullable: true })
-  @JoinColumn({ name: 'requestBy' })
+  @JoinColumn({ name: "requestBy" })
   userId: string;
 
   @CreateDateColumn()

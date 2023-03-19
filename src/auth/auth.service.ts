@@ -4,25 +4,25 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { UserDto } from 'src/dto/request/user.dto';
-import { DataSource } from 'typeorm';
-import { genSalt, hash, compare } from 'bcrypt';
-import { RegistrationResponseDto } from 'src/dto/response/registration.response.dto';
-import { JwtService } from '@nestjs/jwt';
-import { LoginResponseDto } from 'src/dto/response/login.response.dto';
-import { UserRoles } from 'src/db/user.role';
-import { User } from 'src/db/entities/user.entity';
+} from "@nestjs/common";
+import { UserDto } from "src/dto/request/user.dto";
+import { DataSource } from "typeorm";
+import { genSalt, hash, compare } from "bcrypt";
+import { RegistrationResponseDto } from "src/dto/response/registration.response.dto";
+import { JwtService } from "@nestjs/jwt";
+import { LoginResponseDto } from "src/dto/response/login.response.dto";
+import { UserRoles } from "src/db/user.role";
+import { User } from "src/db/entities/user.entity";
 
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject('DataSource') private dataSource: DataSource,
-    private jwtService: JwtService,
+    @Inject("DataSource") private dataSource: DataSource,
+    private jwtService: JwtService
   ) {}
 
   async registerUser(
-    registerUserDto: UserDto,
+    registerUserDto: UserDto
   ): Promise<RegistrationResponseDto> {
     const { userEmail } = registerUserDto;
     let { userPassword } = registerUserDto;
@@ -38,11 +38,11 @@ export class AuthService {
         role,
       });
 
-      return new RegistrationResponseDto(true, 'Registration successful');
+      return new RegistrationResponseDto(true, "Registration successful");
     } catch (error) {
       if (error.code == 23505)
-        throw new ConflictException('You are already registered! Please login');
-      else throw new BadRequestException('Unable to register you');
+        throw new ConflictException("You are already registered! Please login");
+      else throw new BadRequestException("Unable to register you");
     }
   }
 
@@ -53,7 +53,7 @@ export class AuthService {
     try {
       user = await this.dataSource.manager.findOneBy(User, { userEmail });
     } catch (e) {
-      throw new BadRequestException('Unable to login you');
+      throw new BadRequestException("Unable to login you");
     }
 
     if (user) {
@@ -63,8 +63,8 @@ export class AuthService {
           userId,
           role,
         });
-        return new LoginResponseDto(true, 'Login Successful', token);
-      } else throw new BadRequestException('Invalid username or password');
-    } else throw new NotFoundException('User not found');
+        return new LoginResponseDto(true, "Login Successful", token);
+      } else throw new BadRequestException("Invalid username or password");
+    } else throw new NotFoundException("User not found");
   }
 }
