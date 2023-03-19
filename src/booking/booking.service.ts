@@ -132,20 +132,16 @@ export class BookingService {
 
   async getAllBookings(userId): Promise<BookingResoponseDto[]> {
     try {
-      let allBookings;
+      let allBookings = [];
       const bookings = await this.dataSource.manager.findBy(Booking, {
         userId,
       });
 
       if (bookings.length > 0) {
-        allBookings = bookings.filter(async (element) => {
-          let ticket = await this.generateTicket(element.bookingId);
-          return ticket;
-        });
-        allBookings.map((element) => {
-          return new BookingResoponseDto(element);
-        })
-        // console.log(allBookings);
+        for (let i = 0; i < bookings.length; i++) {
+          const ticket = await this.generateTicket(bookings[i].bookingId);
+          allBookings.push(new BookingResoponseDto(ticket));
+        }
         return allBookings;
       } else {
         throw new NotFoundException();
