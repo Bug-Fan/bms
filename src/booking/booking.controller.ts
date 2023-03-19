@@ -76,6 +76,11 @@ export class BookingController {
   }
 
   @Get("bookings")
+  @ApiOkResponse({
+    type: Promise<BookingResoponseDto[]>,
+    description: "Bookings array.",
+  })
+  @ApiNotFoundResponse({ description: "Bookings not found." })
   async getAllBookings(@Req() req) {
     return await this.bookingService.getAllBookings(req.user.userId);
   }

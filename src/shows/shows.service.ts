@@ -88,7 +88,7 @@ export class ShowsService {
     else throw new NotFoundException("Shows do not exists on given movie name");
   }
 
-  async cancelShow(cancelShowDto: CancelShowDto) {
+  async cancelShow(cancelShowDto: CancelShowDto): Promise<CancelResponseDto> {
     const { showId } = cancelShowDto;
 
     try {
