@@ -15,7 +15,13 @@ import { SearchShowDTO } from "src/dto/request/searchShow.dto";
 import { AddShowResponse } from "src/dto/response/addShowResponse.dto";
 import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { getShowsResponse } from "src/dto/response/getShowsResponse.dto";
-import { DataSource, Between, EntityManager, InsertResult, Brackets } from "typeorm";
+import {
+  DataSource,
+  Between,
+  EntityManager,
+  InsertResult,
+  Brackets,
+} from "typeorm";
 
 const take = 10;
 @Injectable()
@@ -42,6 +48,7 @@ export class ShowsService {
             );
           })
         )
+        .andWhere("show.isActive = true")
         .setParameters({
           scrid: screenId,
           start: startDateTime,
@@ -88,6 +95,8 @@ export class ShowsService {
         .where("show.startDateTime  >= :myDate ", {
           myDate: new Date(),
         })
+        .andWhere("show.isActive = true")
+        .orderBy("show.startDateTime", "ASC")
         .limit(take)
         .offset(take * (page - 1) || 0);
 
@@ -97,7 +106,6 @@ export class ShowsService {
         });
 
       result = await queryBuilder.execute();
-
     } catch (e) {
       throw new BadRequestException(e.message);
     }
@@ -111,48 +119,43 @@ export class ShowsService {
     const { showId } = cancelShowDto;
 
     try {
-      const showCanceled = await this.dataSource.manager.update(
-        Show,
-        { showId, isActive: true },
-        { isActive: false }
-      );
+      return await this.dataSource.manager.transaction(
+        async (em: EntityManager): Promise<CancelResponseDto> => {
+          const showCanceled = await em.update(
+            Show,
+            { showId, isActive: true },
+            { isActive: false }
+          );
 
-      if (showCanceled.affected === 1) {
-        const refundInitiated = await this.dataSource.manager.transaction(
-          async (em: EntityManager): Promise<InsertResult> => {
-            
-            const bookings = await em.find(Booking, {
-              select: { bookingId: true },
-              where: { showId },
-            });
-
-            await em.update(
-              Booking,
-              { showId, isCanceled: false },
-              { isCanceled: true }
-            );
-
-            const refunds = bookings.map((element) => {
-              return em.create(Refund, {
-                bookingId: element.bookingId,
-              });
-            });
-
-            const refundInitiated = await em.insert(Refund, refunds);
-
-            return refundInitiated;
+          if (showCanceled.affected <= 0) {
+            throw new NotFoundException();
           }
-        );
 
-        if (refundInitiated.identifiers.length >= 1) {
+          const bookings = await em.find(Booking, {
+            select: { bookingId: true },
+            where: { showId, isCanceled: false },
+          });
+
+          await em.update(
+            Booking,
+            { showId, isCanceled: false },
+            { isCanceled: true }
+          );
+
+          const refunds = bookings.map((element) => {
+            return em.create(Refund, {
+              bookingId: element.bookingId,
+            });
+          });
+
+          await em.insert(Refund, refunds);
+
           return new CancelResponseDto(
             true,
             "Show has been canceled and refund is initiated for all bookings."
           );
         }
-      } else {
-        throw new NotFoundException();
-      }
+      );
     } catch (error) {
       if (error.status === 404) {
         throw new NotFoundException(
@@ -167,14 +170,14 @@ export class ShowsService {
   async getAvailableSeats(availableSeatDto: AvailableSeatDto) {
     let result;
     try {
-      result = this.dataSource.manager.findOne(Show, {
+      result = await this.dataSource.manager.findOne(Show, {
         select: { availableSeats: true },
-        where: { showId: availableSeatDto.showId },
+        where: { showId: availableSeatDto.showId,isActive:true },
       });
     } catch (e) {
       throw new BadRequestException(e.message);
     }
-
+    
     if (result) return result;
     else throw new NotFoundException(`Show doesn't exist`);
   }
