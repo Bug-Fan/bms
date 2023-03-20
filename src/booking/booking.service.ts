@@ -18,10 +18,7 @@ import { Refund } from "src/db/entities/refund.entity";
 export class BookingService {
   constructor(@Inject("DataSource") private dataSource: DataSource) {}
 
-  async bookTickets(
-    bookingRequestDto: BookingRequestDto,
-    userId
-  ): Promise<BookingResoponseDto> {
+  async bookTickets(bookingRequestDto: BookingRequestDto,userId): Promise<BookingResoponseDto> {
     const { showId, seats } = bookingRequestDto;
 
     try {
@@ -190,7 +187,7 @@ export class BookingService {
       const confirmed = await this.dataSource.manager
         .createQueryBuilder()
         .select(
-          "booking.bookingId, booking.seats, movie.movieName, show.startDateTime, screen.screenId, screen.screenName, booking.totalPrice"
+          "booking.bookingId,\"booking\".\"isCanceled\", booking.seats, movie.movieName, show.startDateTime, screen.screenId, screen.screenName, booking.totalPrice"
         )
         .from(Booking, "booking")
         .innerJoin("booking.show", "show")

@@ -32,11 +32,12 @@ export class BookingResoponseDto {
   })
   seats: number[];
   totalPrice: number;
-
+  isCanceled:boolean;
   constructor(confirmed) {
-    const { bookingId, movieName, startDateTime, screenId, screenName, seats, totalPrice } = confirmed;
+    const { bookingId, movieName,isCanceled, startDateTime, screenId, screenName, seats, totalPrice } = confirmed;
     this.bookingId = bookingId;
     this.movieName = movieName;
+    this.isCanceled = isCanceled;
     this.showDate = moment(startDateTime).tz("Asia/Kolkata").format("");
     this.screenId = screenId;
     this.screenName = screenName;
