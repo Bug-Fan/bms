@@ -5,7 +5,6 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { Booking } from "src/db/entities/booking.entity";
-import { Movie } from "src/db/entities/movie.entity";
 import { Refund } from "src/db/entities/refund.entity";
 import { Screen } from "src/db/entities/screen.entity";
 import { Show } from "src/db/entities/show.entity";
@@ -18,6 +17,7 @@ import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { getShowsResponse } from "src/dto/response/getShowsResponse.dto";
 import { DataSource, Brackets } from "typeorm";
 
+const take = 10;
 @Injectable()
 export class ShowsService {
   constructor(@Inject("DataSource") private dataSource: DataSource) {}
@@ -75,7 +75,7 @@ export class ShowsService {
 
   async getShows(movieDTO: SearchShowDTO) {
     let result;
-
+    const { page, movieName } = movieDTO;
     try {
       let queryBuilder = this.dataSource.manager.createQueryBuilder();
 
@@ -85,21 +85,24 @@ export class ShowsService {
         .innerJoin("show.screen", "scr")
         .where("show.startDateTime  >= :myDate ", {
           myDate: new Date(),
-        });
+        })
+        .limit(take)
+        .offset(take * (page - 1) || 0);
 
       if (movieDTO.movieName)
         queryBuilder.andWhere("mv.movieName like :name", {
-          name: movieDTO.movieName,
+          name: movieName,
         });
 
       result = await queryBuilder.execute();
+
     } catch (e) {
       throw new BadRequestException(e.message);
     }
 
     if (result && result.length > 0)
       return new getShowsResponse(true, "Shows fetched", result);
-    else throw new NotFoundException("Shows do not exists on given movie name");
+    else throw new NotFoundException("Shows do not exists");
   }
 
   async cancelShow(cancelShowDto: CancelShowDto) {
