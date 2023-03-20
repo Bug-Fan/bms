@@ -1,31 +1,16 @@
-import { Controller, Get, Post } from "@nestjs/common";
-import {
-  Body,
-  Delete,
-  Query,
-  UseGuards,
-  UsePipes,
-} from "@nestjs/common/decorators";
-import { AuthGuard } from "@nestjs/passport";
-import { UserRoles } from "src/db/user.role";
-import { AddShowDTO } from "src/dto/request/addShow.dto";
-import { SearchShowDTO } from "src/dto/request/searchShow.dto";
-import { AddShowResponse } from "src/dto/response/addShowResponse.dto";
-import { RoleGuard } from "src/guards/role.guard";
-import { ShowsService } from "./shows.service";
-import { DateValidate } from "../pipes/dateValidation.pipe";
-import { CancelShowDto } from "src/dto/request/cancel.show.dto";
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiBody,
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
-} from "@nestjs/swagger";
-import { getShowsResponse } from "src/dto/response/getShowsResponse.dto";
-import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
+import { Controller, Get, Post } from '@nestjs/common';
+import { Body, Delete, Query, UseGuards, UsePipes } from '@nestjs/common/decorators';
+import { AuthGuard } from '@nestjs/passport';
+import { UserRoles } from 'src/db/user.role';
+import { AddShowDTO } from 'src/dto/request/addShow.dto';
+import { SearchShowDTO } from 'src/dto/request/searchShow.dto';
+import { AddShowResponse } from 'src/dto/response/addShowResponse.dto';
+import { RoleGuard } from 'src/guards/role.guard';
+import { ShowsService } from './shows.service';
+import { DateValidate } from '../pipes/dateValidation.pipe'
+import { CancelShowDto } from 'src/dto/request/cancel.show.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { AvailableSeatDto } from 'src/dto/request/availableseat.dto';
 
 @ApiTags("Shows")
 @Controller("shows")
@@ -34,44 +19,25 @@ export class ShowsController {
 
   @UseGuards(AuthGuard("jwt"), new RoleGuard(UserRoles.admin))
   @UsePipes(new DateValidate())
-  @Post()
-  @ApiBearerAuth()
-  @ApiBody({ type: AddShowDTO })
-  @ApiCreatedResponse({
-    type: AddShowResponse,
-    description: "Show added.",
-  })
-  @ApiBadRequestResponse({
-    description: "Entered screen or slot not available or show exists on slot.",
-  })
+  @Post("add")
   addShow(@Body() show: AddShowDTO): Promise<AddShowResponse> {
     return this.showService.addShow(show);
   }
 
   @Get("get")
-  @ApiOkResponse({
-    type: getShowsResponse,
-    description: "Shows found.",
-  })
-  @ApiNotFoundResponse({
-    description: "Shows do not exists on given movie name.",
-  })
-  @ApiBadRequestResponse({ description: "Unable to get shows." })
   getShows(@Query() movieDTO: SearchShowDTO) {
     return this.showService.getShows(movieDTO);
   }
 
   @UseGuards(AuthGuard("jwt"), new RoleGuard(UserRoles.admin))
   @Delete("cancel")
-  @ApiOkResponse({
-    type: CancelResponseDto,
-    description: "Shows canceled and refunds initiated.",
-  })
-  @ApiNotFoundResponse({
-    description: "Shows does not exist.",
-  })
-  @ApiBadRequestResponse({ description: "Unable to cancel show." })
   cancelShow(@Query() cancelShowDto: CancelShowDto) {
     return this.showService.cancelShow(cancelShowDto);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Get("availableSeats")
+  getSeats(@Query() availseatDto: AvailableSeatDto) {
+    return this.showService.getAvailableSeats(availseatDto);
   }
 }

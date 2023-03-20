@@ -9,13 +9,15 @@ import { Refund } from "src/db/entities/refund.entity";
 import { Screen } from "src/db/entities/screen.entity";
 import { Show } from "src/db/entities/show.entity";
 import { AddShowDTO } from "src/dto/request/addShow.dto";
+import { AvailableSeatDto } from "src/dto/request/availableseat.dto";
 import { CancelShowDto } from "src/dto/request/cancel.show.dto";
 import { SearchShowDTO } from "src/dto/request/searchShow.dto";
 import { AddShowResponse } from "src/dto/response/addShowResponse.dto";
 import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { getShowsResponse } from "src/dto/response/getShowsResponse.dto";
-import { DataSource, Between, EntityManager, InsertResult } from "typeorm";
+import { DataSource, Between, EntityManager, InsertResult, Brackets } from "typeorm";
 
+const take = 10;
 @Injectable()
 export class ShowsService {
   constructor(@Inject("DataSource") private dataSource: DataSource) {}
@@ -29,19 +31,27 @@ export class ShowsService {
     let showExists, maxCapacity, availableSeats;
 
     try {
-      showExists = await dbManager.find(Show, {
-        where: [
-          {
-            screenId,
-            startDateTime: Between(startDateTime, endDateTime),
-            endDateTime: Between(startDateTime, endDateTime),
-          },
-        ],
-      });
+      let qb = await dbManager.createQueryBuilder();
+      showExists = await qb
+        .from(Show, "show")
+        .where("show.screenId = :scrid")
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where("(show.startDateTime BETWEEN :start AND :end)").orWhere(
+              "(show.endDateTime BETWEEN :start AND :end)"
+            );
+          })
+        )
+        .setParameters({
+          scrid: screenId,
+          start: startDateTime,
+          end: endDateTime,
+        })
+        .execute();
+
       const screen = await dbManager.findOneBy(Screen, { screenId });
       maxCapacity = screen.maxCapacity;
     } catch (e) {
-      console.log(e);
       throw new BadRequestException("Entered screen not available");
     }
 
@@ -67,25 +77,34 @@ export class ShowsService {
 
   async getShows(movieDTO: SearchShowDTO) {
     let result;
+    const { page, movieName } = movieDTO;
     try {
       let queryBuilder = this.dataSource.manager.createQueryBuilder();
-      result = await queryBuilder
+
+      queryBuilder
         .from(Show, "show")
         .innerJoin("show.movie", "mv")
-        .where("mv.movieName like :name", { name: movieDTO.movieName })
-        .andWhere(
-          "CAST (show.startDateTime AS DATE) >= CAST (:myDate AS DATE)",
-          {
-            myDate: new Date(),
-          }
-        )
-        .execute();
+        .innerJoin("show.screen", "scr")
+        .where("show.startDateTime  >= :myDate ", {
+          myDate: new Date(),
+        })
+        .limit(take)
+        .offset(take * (page - 1) || 0);
+
+      if (movieDTO.movieName)
+        queryBuilder.andWhere("mv.movieName like :name", {
+          name: movieName,
+        });
+
+      result = await queryBuilder.execute();
+
     } catch (e) {
       throw new BadRequestException(e.message);
     }
+
     if (result && result.length > 0)
       return new getShowsResponse(true, "Shows fetched", result);
-    else throw new NotFoundException("Shows do not exists on given movie name");
+    else throw new NotFoundException("Shows do not exists");
   }
 
   async cancelShow(cancelShowDto: CancelShowDto): Promise<CancelResponseDto> {
@@ -143,5 +162,20 @@ export class ShowsService {
         throw new BadRequestException("Unable to cancel show.");
       }
     }
+  }
+
+  async getAvailableSeats(availableSeatDto: AvailableSeatDto) {
+    let result;
+    try {
+      result = this.dataSource.manager.findOne(Show, {
+        select: { availableSeats: true },
+        where: { showId: availableSeatDto.showId },
+      });
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+
+    if (result) return result;
+    else throw new NotFoundException(`Show doesn't exist`);
   }
 }
