@@ -35,7 +35,6 @@ export class ShowsController {
     return this.showService.cancelShow(cancelShowDto);
   }
 
-  @UseGuards(AuthGuard("jwt"))
   @Get("availableSeats")
   getSeats(@Query() availseatDto: AvailableSeatDto) {
     return this.showService.getAvailableSeats(availseatDto);
