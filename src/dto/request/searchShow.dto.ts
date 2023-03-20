@@ -1,14 +1,19 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNumber, IsOptional, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 export class SearchShowDTO {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @ApiProperty({
     name: "movieName",
-    description: "Name of movie to search.",
+    description: "name of movie to search",
     required: true,
     type: "string",
-    example: "Fan",
   })
   movieName: string;
+
+  @IsOptional()
+  @Transform((o) => parseInt(o.value))
+  @IsNumber()
+  page: number;
 }
