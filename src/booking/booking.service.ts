@@ -13,10 +13,14 @@ import { DataSource, EntityManager, InsertResult } from "typeorm";
 import { BookingResoponseDto } from "src/dto/response/booking.response.dto";
 import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { Refund } from "src/db/entities/refund.entity";
+import { EmailService } from "src/email/email.service";
 
 @Injectable()
 export class BookingService {
-  constructor(@Inject("DataSource") private dataSource: DataSource) {}
+  constructor(
+    @Inject("DataSource") private dataSource: DataSource,
+    private emailService:EmailService
+  ) {}
 
   async bookTickets(bookingRequestDto: BookingRequestDto,userId): Promise<BookingResoponseDto> {
     const { showId, seats } = bookingRequestDto;
