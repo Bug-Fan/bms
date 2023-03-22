@@ -15,12 +15,14 @@ import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { Refund } from "src/db/entities/refund.entity";
 import { LockService } from "./lock.service";
 import { LockedResponseDto } from "src/dto/response/locked.response.dto";
+import { EmailService } from "src/email/email.service";
 
 @Injectable()
 export class BookingService {
   constructor(
     @Inject("DataSource") private dataSource: DataSource,
-    private lockService: LockService
+    private lockService: LockService,
+    private emailService:EmailService
   ) {}
 
   async bookTickets(
