@@ -8,7 +8,6 @@ import { ScreenModule } from "./screen/screen.module";
 import { EmailModule } from './email/email.module';
 import { MailerModule, MailerOptions } from "@nestjs-modules/mailer";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
-import { join } from "path";
 
 @Module({
   imports: [

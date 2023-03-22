@@ -5,20 +5,22 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { UserDto } from "src/dto/request/user.dto";
+import { UserDto } from "../dto/request/user.dto";
 import { DataSource } from "typeorm";
 import { genSalt, hash, compare } from "bcrypt";
-import { RegistrationResponseDto } from "src/dto/response/registration.response.dto";
+import { RegistrationResponseDto } from "../dto/response/registration.response.dto";
 import { JwtService } from "@nestjs/jwt";
-import { LoginResponseDto } from "src/dto/response/login.response.dto";
-import { UserRoles } from "src/db/user.role";
-import { User } from "src/db/entities/user.entity";
+import { LoginResponseDto } from "../dto/response/login.response.dto";
+import { UserRoles } from "../db/user.role";
+import { User } from "../db/entities/user.entity";
+import { EmailResponse, EmailService, EmailSubjects } from "../email/email.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject("DataSource") private dataSource: DataSource,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private emailService: EmailService
   ) {}
 
   async registerUser(
@@ -37,10 +39,22 @@ export class AuthService {
         userPassword,
         role,
       });
+      
+      this.emailService.send({
+        toEmail: userEmail,
+        subject: EmailSubjects.REGISTER_SUCCESS,
+        responseHBS: EmailResponse.REGISTER_SUCCESS,
+        customObject: { email: userEmail },
+      });
 
-      return new RegistrationResponseDto(true, "Registration successful");
+      const userResponse = new RegistrationResponseDto(
+        true,
+        "Registration successful"
+      );
+
+      return userResponse;
     } catch (error) {
-      if (error.code == 23505)
+      if (error.code && error.code == 23505)
         throw new ConflictException("You are already registered! Please login");
       else throw new BadRequestException("Unable to register you");
     }
