@@ -16,12 +16,14 @@ import { join } from "path";
       useFactory: async (configs: ConfigService): Promise<MailerOptions> => {
         return {
           transport: {
-            service: "Gmail",
+            host: configs.get<string>("EMAIL_HOST"),
             auth: {
-              user: configs.get<string>("GMAIL_USER"),
-              pass: configs.get<string>("GMAIL_PASS"),
+              user: configs.get<string>("SENDING_USER"),
+              pass: configs.get<string>("SENDING_PASS"),
             },
+            secure: true,
           },
+
           template: {
             dir: join(__dirname, "mail_templates"),
             adapter: new HandlebarsAdapter(),

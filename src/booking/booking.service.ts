@@ -15,14 +15,18 @@ import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { Refund } from "src/db/entities/refund.entity";
 import { LockService } from "./lock.service";
 import { LockedResponseDto } from "src/dto/response/locked.response.dto";
-import { EmailService } from "src/email/email.service";
+import {
+  EmailResponse,
+  EmailService,
+  EmailSubjects,
+} from "src/email/email.service";
 
 @Injectable()
 export class BookingService {
   constructor(
     @Inject("DataSource") private dataSource: DataSource,
     private lockService: LockService,
-    private emailService:EmailService
+    private emailService: EmailService
   ) {}
 
   async bookTickets(
@@ -172,31 +176,50 @@ export class BookingService {
 
   async pay(bookingId, userId): Promise<BookingResoponseDto> {
     try {
-      const details = await this.dataSource.manager.findOneBy(Booking, {
-        bookingId,
-        userId,
+      const details = await this.dataSource.manager.findOne(Booking, {
+        where: {
+          bookingId,
+          userId,
+        },
+        relations: { user: true },
       });
+      console.log(details);
 
-      const paid = await this.dataSource.manager.update(
-        Booking,
-        { bookingId },
-        { paymentStatus: true }
-      );
+      if (details) {
+        const paid = await this.dataSource.manager.update(
+          Booking,
+          { bookingId },
+          { paymentStatus: true }
+        );
 
-      if (details && paid.affected === 1) {
-        const { showId, seats } = details;
-        this.lockService.releaseLock(showId, seats, bookingId);
+        if (paid.affected === 1) {
+          const { showId, seats } = details;
+          this.lockService.releaseLock(showId, seats, bookingId);
 
-        const confirmedBooking = await this.generateTicket(bookingId);
-        return new BookingResoponseDto(confirmedBooking);
+          const confirmedBooking = await this.generateTicket(bookingId);
+          let bookingResponse = new BookingResoponseDto(confirmedBooking);
+
+          this.emailService.send({
+            toEmail: details.user.userEmail,
+            subject: EmailSubjects.BOOKING_SUCCESS,
+            responseHBS: EmailResponse.BOOKING_SUCCESS,
+            customObject: bookingResponse,
+          });
+          return bookingResponse;
+        } else {
+          throw new BadRequestException();
+        }
       } else {
-        throw new BadRequestException();
+        throw new NotFoundException();
       }
     } catch (error) {
       console.log(error);
-      throw new BadRequestException(
-        "Booking not found or payment is not confirmed."
-      );
+      if (error.status === 400)
+        throw new BadRequestException("Unable to confirm your payment");
+      else if(error.status === 404)
+          throw new NotFoundException('Booking not found')
+      else
+        throw new BadGatewayException(error.message)
     }
   }
 
@@ -214,7 +237,7 @@ export class BookingService {
         .andWhere("show.isActive = true")
         .setParameters({ seats, showId, date: new Date() })
         .execute();
-        console.log(result[0]);
+
       if (result.length === 0) {
         throw new NotFoundException();
       } else if (
