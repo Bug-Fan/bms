@@ -13,12 +13,20 @@ import { DataSource, EntityManager, InsertResult } from "typeorm";
 import { BookingResoponseDto } from "src/dto/response/booking.response.dto";
 import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { Refund } from "src/db/entities/refund.entity";
+import { LockService } from "./lock.service";
+import { LockedResponseDto } from "src/dto/response/locked.response.dto";
 
 @Injectable()
 export class BookingService {
-  constructor(@Inject("DataSource") private dataSource: DataSource) {}
+  constructor(
+    @Inject("DataSource") private dataSource: DataSource,
+    private lockService: LockService
+  ) {}
 
-  async bookTickets(bookingRequestDto: BookingRequestDto,userId): Promise<BookingResoponseDto> {
+  async bookTickets(
+    bookingRequestDto: BookingRequestDto,
+    userId
+  ): Promise<LockedResponseDto> {
     const { showId, seats } = bookingRequestDto;
 
     try {
@@ -32,11 +40,20 @@ export class BookingService {
               userId,
               showId,
               seats,
-              paymentStatus: true,
+              paymentStatus: false,
               totalPrice: price * seats.length,
             });
 
-            await em.update(Show, { showId }, { availableSeats: currentseats });
+            await em
+              .createQueryBuilder(Show, "show")
+              .update(Show)
+              .set({
+                availableSeats: currentseats,
+                lockedSeats: () => 'array_cat("lockedSeats", :seats)',
+              })
+              .where({ showId })
+              .setParameters({ seats })
+              .execute();
 
             return {
               bookingId: booking.identifiers[0].bookingId,
@@ -44,11 +61,13 @@ export class BookingService {
             };
           }
         );
-
         if (transactionComplete.status) {
           const bookingId = transactionComplete.bookingId;
-          const confirmedBooking = await this.generateTicket(bookingId);
-          return new BookingResoponseDto(confirmedBooking);
+          const timer = setTimeout(
+            () => this.lockService.releaseLock(showId, seats, bookingId),
+            20000
+          );
+          return new LockedResponseDto("You can go to Payment.", bookingId);
         } else {
           throw new BadGatewayException();
         }
@@ -58,7 +77,7 @@ export class BookingService {
         throw new NotFoundException("The show you selected doesn't exist.");
       } else if (error.status === 400) {
         throw new BadRequestException(
-          "Invalid seat number in the booked seats or one your selected seats is already booked."
+          "Invalid seat number in the booked seats or one your selected seats is not available."
         );
       } else {
         console.log(error);
@@ -149,12 +168,42 @@ export class BookingService {
     }
   }
 
+  async pay(bookingId, userId): Promise<BookingResoponseDto> {
+    try {
+      const details = await this.dataSource.manager.findOneBy(Booking, {
+        bookingId,
+        userId,
+      });
+
+      const paid = await this.dataSource.manager.update(
+        Booking,
+        { bookingId },
+        { paymentStatus: true }
+      );
+
+      if (details && paid.affected === 1) {
+        const { showId, seats } = details;
+        this.lockService.releaseLock(showId, seats, bookingId);
+
+        const confirmedBooking = await this.generateTicket(bookingId);
+        return new BookingResoponseDto(confirmedBooking);
+      } else {
+        throw new BadRequestException();
+      }
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(
+        "Booking not found or payment is not confirmed."
+      );
+    }
+  }
+
   async validateShowAndSeats(showId, seats) {
     try {
       let result = await this.dataSource.manager
         .createQueryBuilder()
         .select(
-          "screen.maxCapacity, show.availableSeats currentSeats, show.availableSeats @> :seats seatsAvailable, show.price price"
+          "screen.maxCapacity, show.availableSeats currentSeats, show.availableSeats @> :seats seatsAvailable, show.lockedSeats @> :seats seatsLocked, show.price price"
         )
         .from(Show, "show")
         .innerJoin("show.screen", "screen")
@@ -163,12 +212,13 @@ export class BookingService {
         .andWhere("show.isActive = true")
         .setParameters({ seats, showId, date: new Date() })
         .execute();
-
+        console.log(result[0]);
       if (result.length === 0) {
         throw new NotFoundException();
       } else if (
         Math.max(seats) > result[0].maxCapacity ||
-        !result[0].seatsavailable
+        !result[0].seatsavailable ||
+        result[0].seatslocked
       ) {
         throw new BadRequestException();
       } else {
@@ -187,7 +237,7 @@ export class BookingService {
       const confirmed = await this.dataSource.manager
         .createQueryBuilder()
         .select(
-          "booking.bookingId,\"booking\".\"isCanceled\", booking.seats, movie.movieName, show.startDateTime, screen.screenId, screen.screenName, booking.totalPrice"
+          'booking.bookingId,"booking"."isCanceled", booking.seats, movie.movieName, show.startDateTime, screen.screenId, screen.screenName, booking.totalPrice'
         )
         .from(Booking, "booking")
         .innerJoin("booking.show", "show")
