@@ -17,9 +17,7 @@ import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
 import { getShowsResponse } from "src/dto/response/getShowsResponse.dto";
 import {
   DataSource,
-  Between,
   EntityManager,
-  InsertResult,
   Brackets,
 } from "typeorm";
 

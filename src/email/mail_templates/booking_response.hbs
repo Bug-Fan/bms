@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <style>
+      body{ font-family: sans-serif; font-size: 12px; font-family: 'Poppins',
+      sans-serif; } /* Main Ticket Style */ .ticketContainer{ background-color:
+      whitesmoke; } .ticket{ width:80%; margin: 10%; background: white; color:
+      darkslategray; border-radius: 12px; } .ticketShadow{ margin:15%; width:
+      75%; height: 12px; border-radius: 50%; background-color: rgba(0, 0, 0,
+      0.4); filter: blur(12px); } /* Ticket Content */ .ticketTitle{ font-size:
+      1.5rem; font-weight: 700; padding: 12px 16px 4px; } hr{ width: 90%;
+      border: 1px solid #efefef; } .ticketDetail{ font-size: 1.1rem;
+      font-weight: 500; padding: 4px 16px; } .ticketSubDetail{ display: flex;
+      justify-content: space-between; font-size: 1rem; padding: 12px 16px; }
+      .ticketSubDetail .code{ margin-right: 24px; } /* Ticket Ripper */
+      .ticketRip{ display: flex; justify-content: space-between; align-items:
+      center; } .ripLine{ width: 100%; border-top: 3px solid white;
+      border-top-style: dashed ; } /* Ticket Bouncing Animation */ @keyframes
+      bouncingCard { from { transform: translateY(0);} to {transform:
+      translateY(-18px);} } @keyframes bouncingShadow { from { transform:
+      translateY(0px);} to {transform: translateY(4px);} }
+
+    </style>
+  </head>
+  <body>
+    <div class="ticketContainer">
+      <div class="ticket">
+        <div class="ticketTitle">BMS APP</div>
+        <hr />
+        <div class="ticketDetail">
+          <div>Booking Id: {{data.bookingId}}</div>
+          <div>Movie: {{data.movieName}}</div>
+          <div>Screen: {{data.screenName}}</div>
+          <div>Seats: {{data.seats}}</div>
+          <div>Price: {{data.totalPrice}}</div>
+        </div>
+        <div class="ticketRip">
+          <div class="ripLine"></div>
+        </div>
+        <div class="ticketSubDetail">
+          <div>Date Time: {{data.showDate}}</div>
+        </div>
+      </div>
+      <div class="ticketShadow"></div>
+    </div>
+  </body>
+</html>
