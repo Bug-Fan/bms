@@ -12,7 +12,7 @@ export class EmailService {
   async send(mailOptions: MyMailOptions) {
     const { responseHBS, subject, toEmail, customObject } = mailOptions;
     let result = await this.mailservice.sendMail({
-      from: this.confService.get<string>("GMAIL_USER"),
+      from: this.confService.get<string>("SENDING_USER"),
       to: toEmail,
       subject,
       template: responseHBS,
@@ -20,7 +20,6 @@ export class EmailService {
         data: customObject,
       },
     });
-    console.log(result);
   }
 }
 
