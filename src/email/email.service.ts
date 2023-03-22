@@ -44,11 +44,9 @@ export class MyMailOptions {
 export enum EmailSubjects {
   REGISTER_SUCCESS = "Registration",
   BOOKING_SUCCESS = "Booking Confirmation",
-  BOOKING_CANCEL = "Booking Cancelation",
 }
 
 export enum EmailResponse {
   REGISTER_SUCCESS = "registration_response",
   BOOKING_SUCCESS = "booking_response",
-  BOOKING_CANCEL = "cancel_booking",
 }
