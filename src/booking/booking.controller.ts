@@ -22,8 +22,10 @@ import {
 } from "@nestjs/swagger";
 import { BookingRequestDto } from "src/dto/request/booking.request.dto";
 import { CancelRequestDto } from "src/dto/request/cancel.request.dto";
+import { PayRequestDto } from "src/dto/request/pay.request.dto";
 import { BookingResoponseDto } from "src/dto/response/booking.response.dto";
 import { CancelResponseDto } from "src/dto/response/cancel.response.dto";
+import { LockedResponseDto } from "src/dto/response/locked.response.dto";
 import { RoleGuard } from "src/guards/role.guard";
 import { LoggingInterceptor } from "src/interceptors/logging.interceptor";
 import { BookingService } from "./booking.service";
@@ -39,20 +41,20 @@ export class BookingController {
   @Post("book")
   @ApiBody({ type: BookingRequestDto })
   @ApiCreatedResponse({
-    type: BookingResoponseDto,
-    description: "Tickets Booked.",
+    type: LockedResponseDto,
+    description: "Tickets Locked.",
   })
   @ApiNotFoundResponse({ description: "Show doesn't exist" })
   @ApiBadRequestResponse({
     description: "Invalid seat number in the booked seats.",
   })
   @ApiConflictResponse({
-    description: "One of selected seats is already booked.",
+    description: "One of selected seats is already locked or booked.",
   })
   async bookTickets(
     @Body() bookingRequestDto: BookingRequestDto,
     @Req() req
-  ): Promise<BookingResoponseDto> {
+  ): Promise<LockedResponseDto> {
     return await this.bookingService.bookTickets(
       bookingRequestDto,
       req.user.userId
@@ -83,5 +85,14 @@ export class BookingController {
   @ApiNotFoundResponse({ description: "Bookings not found." })
   async getAllBookings(@Req() req) {
     return await this.bookingService.getAllBookings(req.user.userId);
+  }
+
+  @Post("pay")
+  async pay(
+    @Query() payRequestDto: PayRequestDto,
+    @Req() req
+  ): Promise<BookingResoponseDto> {
+    const { bookingId } = payRequestDto;
+    return await this.bookingService.pay(bookingId, req.user.userId);
   }
 }

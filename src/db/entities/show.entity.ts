@@ -42,6 +42,9 @@ export class Show {
   @Column('integer', { array: true })
   availableSeats: number[];
 
+  @Column('integer', { array: true, default: {} })
+  lockedSeats: number[]
+
   @Column('boolean', { default: true })
   isActive: boolean;
 }
