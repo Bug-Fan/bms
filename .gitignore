@@ -37,3 +37,6 @@ lerna-debug.log*
 # Linting Files
 .eslintrc.js
 .prettierrc
+
+#env
+.env
