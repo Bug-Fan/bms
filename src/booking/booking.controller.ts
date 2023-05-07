@@ -88,6 +88,12 @@ export class BookingController {
   }
 
   @Post("pay")
+  @ApiOkResponse({
+    type: Promise<BookingResoponseDto>,
+    description: "Bookings data.",
+  })
+  @ApiNotFoundResponse({ description: "Booking not found." })
+  @ApiBadRequestResponse({ description: "Unable to pay." })
   async pay(
     @Query() payRequestDto: PayRequestDto,
     @Req() req
